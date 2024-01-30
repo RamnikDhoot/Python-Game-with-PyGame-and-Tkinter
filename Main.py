@@ -1,8 +1,16 @@
-import pygame
+iimport pygame
 import random
+import os
 
 # Initialize Pygame
 pygame.init()
+
+# Load images and sounds
+player_image = pygame.image.load('player.png')
+obstacle_image = pygame.image.load('obstacle.png')
+collectible_image = pygame.image.load('collectible.png')
+collect_sound = pygame.mixer.Sound('collect.wav')
+crash_sound = pygame.mixer.Sound('crash.wav')
 
 # Set up the screen
 screen = pygame.display.set_mode((800, 600))
@@ -42,25 +50,33 @@ class Collectible(pygame.sprite.Sprite):
         self.surf.fill((0, 255, 0))  # Green color
         self.rect = self.surf.get_rect(center=(random.randint(20, 780), random.randint(20, 580)))
 
+def reset_game():
+    global player, obstacles, collectibles, all_sprites, score
+
+    # Initialize player, obstacles, and collectibles
+    player = Player()
+    obstacles = pygame.sprite.Group()
+    collectibles = pygame.sprite.Group()
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(player)
+
+# Add obstacles and collectibles to their groups
+    for _ in range(5):
+        obstacle = Obstacle()
+        obstacles.add(obstacle)
+        all_sprites.add(obstacle)
+
+    for _ in range(3):
+        collectible = Collectible()
+        collectibles.add(collectible)
+        all_sprites.add(collectible)
+
+    score = 0
+
 # Initialize player
 player = Player()
 
-# Initialize obstacles and collectibles
-obstacles = pygame.sprite.Group()
-collectibles = pygame.sprite.Group()
-all_sprites = pygame.sprite.Group()
-all_sprites.add(player)
 
-# Add obstacles and collectibles to their groups
-for _ in range(5):
-    obstacle = Obstacle()
-    obstacles.add(obstacle)
-    all_sprites.add(obstacle)
-
-for _ in range(3):
-    collectible = Collectible()
-    collectibles.add(collectible)
-    all_sprites.add(collectible)
 
 # Game loop
 running = True
@@ -82,6 +98,16 @@ while running:
     for entity in obstacles:
         if player.rect.colliderect(entity.rect):
             running = False  # Game Over
+    # Drawing everything
+        screen.fill((0, 0, 0))
+        for entity in all_sprites:
+            screen.blit(entity.surf, entity.rect)
+
+        # Display score
+        score_text = font.render(f'Score: {score}', True, (255, 255, 255))
+        screen.blit(score_text, (10, 10))
+
+        pygame.display.flip()
 
     # Update game window
     screen.fill((0, 0, 0))  # Clear the screen
@@ -89,5 +115,7 @@ while running:
         screen.blit(entity.surf, entity.rect)
 
     pygame.display.update()
+
+   
 
 pygame.quit()
